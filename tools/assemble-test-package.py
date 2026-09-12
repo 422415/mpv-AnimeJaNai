@@ -51,6 +51,9 @@ for source in paths['manager'].iterdir():
     if source.is_file() and source.suffix.lower() in ('.exe', '.dll'):
         shutil.copy2(source, destination / source.name)
 shutil.copy2(paths['updater'] / 'AnimeJaNaiUpdater.exe', destination / 'AnimeJaNaiUpdater.exe')
+shaders = Path(__file__).resolve().parents[1] / 'BuildMpvUpscale2xAnimeJaNai/mpv-upscale-2x_animejanai/portable_config/shaders'
+for name in ('noise_static_luma.hook', 'noise_static_chroma.hook'):
+    shutil.copy2(shaders / name, destination / 'portable_config/shaders' / name)
 
 manifest['package_version'] = args.version
 manifest['component_package_version'] = args.component_version
@@ -77,7 +80,9 @@ record = {
     'default_backend': 'DirectML',
     'sha256': {name: hashlib.sha256((destination / name).read_bytes()).hexdigest()
                for name in ('mpv.exe', 'mpv.com', 'libmpv-2.dll', 'AnimeJaNaiManager.exe',
-                            'AnimeJaNaiUpdater.exe', 'manifest.json', 'version.txt')},
+                            'AnimeJaNaiUpdater.exe', 'manifest.json', 'version.txt',
+                            'portable_config/shaders/noise_static_luma.hook',
+                            'portable_config/shaders/noise_static_chroma.hook')},
 }
 (info / 'test-package.json').write_text(json.dumps(record, indent=2) + '\n', encoding='utf-8')
 (destination / 'TEST-BUILD.txt').write_text(f'''AnimeJaNai {args.version} — Windows x64 portable test
@@ -94,6 +99,7 @@ runtime and models are unchanged in this test package.
 Included fixes: installed-release component selection, failure-safe keybinding
 migration, RIFE ensemble profile export/import, subtitle buffer-transfer
 capability handling, failed texture preallocation handling and deadline units.
+Both noise shaders also initialize unused channels so D3D11 compiles them.
 
 The player and libass are rebuilt with MSYS2 UCRT64. Their dependency versions
 and source commits are recorded in build-info. This build differs from Jeff's
