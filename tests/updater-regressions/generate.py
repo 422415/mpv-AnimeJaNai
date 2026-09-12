@@ -16,14 +16,18 @@ def method(signature):
         depth+=(source[end]=='{')-(source[end]=='}'); end+=1
     return source[start:end]
 methods=[method(s) for s in ('void SyncInputConf()', 'string ReadLocalVersion()',
+    'static string ReadManifestString(', 'string? PackVersionMismatch(',
     'Task<Release> GetInstalledReleaseAsync()', 'async Task<Release> GetReleaseAsync(string url)',
     'async Task<PackIndex> GetPackIndexAsync()')]
+start=source.index('string ReadComponentVersion() =>')
+methods.append(source[start:source.index(';',start)+1])
 latest=next(s for s in source.splitlines() if s.startswith('Task<Release> GetLatestReleaseAsync()'))
 repo=next(s for s in source.splitlines() if s.startswith('const string Repo ='))
 wrapper='''using System.Text.Json;
 class Production
 {
     private readonly string installDir;
+    private string localManifest => Path.Combine(installDir, "manifest.json");
     private readonly HttpMessageHandler handler;
     private readonly bool isWinRid;
     private readonly string platformRid;
@@ -35,6 +39,7 @@ class Production
     public void Sync() => SyncInputConf();
     public Task<PackIndex> Packs() => GetPackIndexAsync();
     public Task<Release> Latest() => GetLatestReleaseAsync();
+    public string? Mismatch(PackIndex index) => PackVersionMismatch(index);
 '''.replace('REPO',repo)
 (out/'Production.cs').write_text(wrapper+'\n'.join(methods)+'\n'+latest+'\n}\n'+
     source[source.index('record Release('):],encoding='utf-8')

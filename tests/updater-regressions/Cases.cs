@@ -102,6 +102,29 @@ try
         Check(index.PackageVersion == "3.6.0" && http.Urls.Count == 0, "Local pack override used network");
         Pass("local-pack-control");
     }
+    {
+        var http = new FixtureHttp();
+        string dir = Path.Combine(root, "pinned-components"); Directory.CreateDirectory(dir);
+        File.WriteAllText(Path.Combine(dir, "version.txt"), "3.6.1-test.1");
+        File.WriteAllText(Path.Combine(dir, "manifest.json"),
+            "{\"package_version\":\"3.6.1-test.1\",\"component_package_version\":\"3.6.0\"}");
+        var app = new Production(dir, http);
+        var index = await app.Packs();
+        Check(index.PackageVersion == "3.6.0" && http.Urls[0].EndsWith("/tags/3.6.0"),
+            "Test package did not select its explicit component release");
+        Check(app.Mismatch(index) == null, "Rejected explicitly selected matching packs");
+        Check(app.Mismatch(index with { PackageVersion = "3.5.0" }) != null,
+            "Explicit pin allowed a different component release");
+        Pass("explicit-component-release");
+    }
+    {
+        var app = new Production(Path.Combine(root, "3.6.0"), new FixtureHttp());
+        var index = await app.Packs();
+        Check(app.Mismatch(index) == null, "Rejected normal matching release");
+        Check(app.Mismatch(index with { PackageVersion = "3.5.0" }) != null,
+            "Normal package accepted a different release");
+        Pass("normal-version-validation");
+    }
     Console.WriteLine($"Completed {passed} updater regression cases.");
     return 0;
 }

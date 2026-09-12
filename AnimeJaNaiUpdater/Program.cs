@@ -779,13 +779,19 @@ string ReadLocalVersion()
 
 Task<Release> GetLatestReleaseAsync() => GetReleaseAsync(apiLatest);
 
+// A test/core-only package may reuse an explicitly pinned component release
+// when its inference/runtime/model dependencies are unchanged. Normal packages
+// omit this field and resolve components against their own installed version.
+string ReadComponentVersion() => ReadManifestString(
+    localManifest, "component_package_version", ReadLocalVersion()).Trim();
+
 Task<Release> GetInstalledReleaseAsync()
 {
-    string tag = ReadLocalVersion();
+    string tag = ReadComponentVersion();
     if (string.IsNullOrWhiteSpace(tag) || tag == "0.0.0")
     {
         throw new InvalidOperationException(
-            "Cannot select component packs: the installed version.txt is missing or empty.");
+            "Cannot select component packs: the installed component version is missing or empty.");
     }
     return GetReleaseAsync($"https://api.github.com/repos/{Repo}/releases/tags/{Uri.EscapeDataString(tag)}");
 }
@@ -1010,9 +1016,9 @@ void WriteInstalledComponents(Dictionary<string, string> installed)
 
 string? PackVersionMismatch(PackIndex index)
 {
-    string localVersion = ReadManifestString(localManifest, "package_version", "");
+    string localVersion = ReadComponentVersion();
     return localVersion != "" && index.PackageVersion != "" && localVersion != index.PackageVersion
-        ? $"Installed package is v{localVersion} but the published packs are for v{index.PackageVersion}."
+        ? $"This installation selects component release v{localVersion} but the published packs are for v{index.PackageVersion}."
         : null;
 }
 
@@ -1130,7 +1136,7 @@ async Task<int> InstallComponentAsync(string name)
     }
     if (pack.Url is null)
     {
-        Console.WriteLine($"Pack '{name}' has no downloadable asset on the latest release.");
+        Console.WriteLine($"Pack '{name}' has no downloadable asset on the selected release.");
         return 1;
     }
     if (PackVersionMismatch(index) is string warn)

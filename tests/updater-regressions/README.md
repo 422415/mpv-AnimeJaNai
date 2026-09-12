@@ -14,3 +14,8 @@ The replacement/deletion lock cases require Windows sharing semantics. Cases
 cover preserved bindings after replacement failure, retry after retirement
 failure, idempotence, CRLF, empty/absent legacy files, managed-block refresh, exact installed-release selection,
 missing version/release, and application-update, local-pack and Linux-index controls.
+
+The explicit-component-release case covers test packages that declare
+`component_package_version` in their manifest. Such a pin is appropriate only
+when the selected release's component dependencies are unchanged. Both pinned
+and ordinary installations still reject an index from a different release.
