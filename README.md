@@ -45,6 +45,27 @@ shipped keybindings are refreshed.)
 
 ## Customizing Profiles and Other Settings
 
+### Automatic Display Refresh Rate (Experimental, Windows)
+
+Enable this option in Manager's **Profiles** tab and restart the player. With a
+compatible AJN player build, it uses actual output-frame timing to match sustained
+fixed-rate sections to a supported display refresh (or an exact multiple).
+Variable-rate sections use the highest supported progressive refresh at the
+current resolution. It waits for several seconds of consistent timing before
+switching and limits how often switches occur.
+
+Your TV may briefly go black during a change. The original refresh is restored
+at playback end or normal player exit. The feature is off by default, does not
+interpolate video, and does not change your `video-sync` setting. A display limited
+to 60 Hz is supported, though arbitrary VFR cannot always have perfectly even
+presentation on a fixed-refresh display. Windows driver/TV switching behavior
+still needs testing on your hardware.
+
+The setting requires all three updated components: Manager, the native mpv
+player with `display-rate-match`, and `scripts/animejanai_backend.lua`.
+
+### Profiles
+
 Upscaling can be further customized using the AnimeJaNai Manager which can be launched by pressing `ctrl+E` from mpvnet. The Manager allows the setup of up to 9 custom slots and also the use of custom chains, conditional settings based on video resolution and framerate, downscaling to improve performance, and more. The default upscaling profile can also be set in the Manager. 
 
 ![image](https://github.com/the-database/mpv-upscale-2x_animejanai/assets/25811902/76a8db5b-8c67-4b0c-911a-9b02598fb37a)
