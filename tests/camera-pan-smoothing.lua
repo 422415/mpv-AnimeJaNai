@@ -13,7 +13,11 @@ local function step(fn)
 end
 mp.add_timeout(0.3, function() step(function()
     local enabled = mode == 'on' or mode == 'custom'
-    check('camera-cadence', enabled and 'yes' or 'no')
+    check('camera-pan-smoothing', enabled and 'yes' or 'no')
+    check('camera-cadence', 'no')
+    check('camera-pan-half-rate', 'no')
+    check('camera-pan-refreshes', enabled and '1' or '0')
+    if enabled then check('vulkan-queue-count', '3') end
     check('video-sync', enabled and 'display-resample' or 'audio')
     check('interpolation', enabled and 'no' or 'yes')
     check('blend-subtitles', enabled and 'no' or 'yes')
@@ -22,15 +26,15 @@ mp.add_timeout(0.3, function() step(function()
     if mode == 'directml' then check('hwdec', 'd3d11va') end
     mp.commandv('keypress', 'F8')
     mp.add_timeout(0.1, function() step(function()
-        check('camera-cadence', mode == 'custom' and 'yes' or 'no')
+        check('camera-pan-smoothing', mode == 'custom' and 'yes' or 'no')
         if mode == 'custom' then
             assert(mp.get_property_native('user-data/cadence-custom-hit') == 'yes', 'Custom F8 binding did not run')
         end
         mp.commandv('keypress', 'F8')
         mp.add_timeout(0.1, function() step(function()
-            check('camera-cadence', enabled and 'yes' or 'no')
+            check('camera-pan-smoothing', enabled and 'yes' or 'no')
             check('display-rate-match', enabled and 'no' or 'yes')
-            mp.msg.info('PASS camera cadence startup and F8: ' .. mode)
+            mp.msg.info('PASS camera pan smoothing startup and F8: ' .. mode)
             mp.commandv('quit', 0)
         end) end)
     end) end)

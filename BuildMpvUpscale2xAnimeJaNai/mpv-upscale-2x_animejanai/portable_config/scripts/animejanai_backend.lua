@@ -37,7 +37,7 @@ local function read_conf()
     local default_slot
     local sub_render_mode
     local display_rate_match = false
-    local camera_cadence = false
+    local camera_pan_smoothing = false
     local rife = false
     local in_global = false
     for line in f:lines() do
@@ -61,9 +61,9 @@ local function read_conf()
             if r then
                 display_rate_match = r:lower() == 'yes' or r:lower() == 'true'
             end
-            local c = line:match('^camera_cadence=([^%s]+)')
+            local c = line:match('^camera_pan_smoothing=([^%s]+)')
             if c then
-                camera_cadence = c:lower() == 'yes' or c:lower() == 'true'
+                camera_pan_smoothing = c:lower() == 'yes' or c:lower() == 'true'
             end
         end
         if line:match('^chain_%d+_rife=yes') or line:match('^chain_%d+_rife=true') then
@@ -71,7 +71,7 @@ local function read_conf()
         end
     end
     f:close()
-    return backend, rife, default_slot, sub_render_mode, display_rate_match, camera_cadence
+    return backend, rife, default_slot, sub_render_mode, display_rate_match, camera_pan_smoothing
 end
 
 local function exists(rel)
@@ -166,7 +166,7 @@ local function check_components(backend, rife_configured)
     end)
 end
 
-local backend_raw, rife_configured, default_slot, sub_render_mode, display_rate_match, camera_cadence = read_conf()
+local backend_raw, rife_configured, default_slot, sub_render_mode, display_rate_match, camera_pan_smoothing = read_conf()
 if display_rate_match and mp.get_property('platform') == 'windows' then
     local ok, err = mp.set_property('display-rate-match', 'yes')
     if not ok then
@@ -263,26 +263,26 @@ end
 
 -- This opt-in uses the tested TensorRT/CUDA/Vulkan path. Never force DirectML
 -- output through Vulkan, which would require downloading frames to the CPU.
-if camera_cadence then
+if camera_pan_smoothing then
     if backend ~= 'tensorrt' then
-        msg.warn('GPU Camera Pan Correction requires the TensorRT backend')
-    elseif mp.get_property('camera-cadence') == nil or
-           not profile_options(mp.get_property_native('profile-list') or {}, 'camera-cadence-experimental') then
-        msg.error('GPU Camera Pan Correction requires the matching experimental AJN player package')
+        msg.warn('47.952 Hz Camera Pan Smoothing requires the TensorRT backend')
+    elseif mp.get_property('camera-pan-smoothing') == nil or
+           not profile_options(mp.get_property_native('profile-list') or {}, 'camera-pan-smoothing-experimental') then
+        msg.error('47.952 Hz Camera Pan Smoothing requires the matching experimental AJN player package')
     else
-        local ok, err = mp.commandv('apply-profile', 'camera-cadence-experimental')
+        local ok, err = mp.commandv('apply-profile', 'camera-pan-smoothing-experimental')
         if not ok then
-            msg.error('Could not enable GPU Camera Pan Correction: ' .. tostring(err))
+            msg.error('Could not enable 47.952 Hz Camera Pan Smoothing: ' .. tostring(err))
         else
             -- A normal (non-forced) script binding overrides mpv's fallback
             -- playlist key, while any explicit user input.conf binding wins.
             -- Register only for this opt-in; F8 never edits animejanai.conf.
-            mp.add_key_binding('F8', 'camera-cadence-compare', function()
-                local enabled = not mp.get_property_bool('camera-cadence', false)
-                mp.set_property_bool('camera-cadence', enabled)
-                mp.osd_message('GPU camera pan correction: ' .. (enabled and 'ON' or 'OFF (comparison)'), 2)
+            mp.add_key_binding('F8', 'camera-pan-smoothing-compare', function()
+                local enabled = not mp.get_property_bool('camera-pan-smoothing', false)
+                mp.set_property_bool('camera-pan-smoothing', enabled)
+                mp.osd_message('47.952 Hz pan smoothing: ' .. (enabled and 'ON' or 'OFF (comparison)'), 2)
             end)
-            msg.info('GPU Camera Pan Correction enabled; F8 compares on/off')
+            msg.info('47.952 Hz Camera Pan Smoothing enabled; F8 compares on/off')
         end
     end
 end
