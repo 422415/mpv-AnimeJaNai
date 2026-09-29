@@ -265,10 +265,10 @@ end
 -- output through Vulkan, which would require downloading frames to the CPU.
 if camera_pan_smoothing then
     if backend ~= 'tensorrt' then
-        msg.warn('47.952 Hz Camera Pan Smoothing requires the TensorRT backend')
+        msg.warn('Camera Pan Smoothing requires the TensorRT backend')
     elseif mp.get_property('camera-pan-smoothing') == nil or
            not profile_options(mp.get_property_native('profile-list') or {}, 'camera-pan-smoothing-experimental') then
-        msg.error('47.952 Hz Camera Pan Smoothing requires the matching experimental AJN player package')
+        msg.error('Camera Pan Smoothing requires the matching experimental AJN player package')
     else
         local ok, err = mp.commandv('apply-profile', 'camera-pan-smoothing-experimental')
         if not ok then
@@ -280,9 +280,9 @@ if camera_pan_smoothing then
             mp.add_key_binding('F8', 'camera-pan-smoothing-compare', function()
                 local enabled = not mp.get_property_bool('camera-pan-smoothing', false)
                 mp.set_property_bool('camera-pan-smoothing', enabled)
-                mp.osd_message('47.952 Hz pan smoothing: ' .. (enabled and 'ON' or 'OFF (comparison)'), 2)
+                mp.osd_message('Camera pan smoothing: ' .. (enabled and 'ON' or 'OFF (comparison)'), 2)
             end)
-            msg.info('47.952 Hz Camera Pan Smoothing enabled; F8 compares on/off')
+            msg.info('Camera Pan Smoothing enabled; F8 compares on/off')
         end
     end
 end

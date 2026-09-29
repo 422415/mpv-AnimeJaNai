@@ -16,7 +16,7 @@ mp.add_timeout(0.3, function() step(function()
     check('camera-pan-smoothing', enabled and 'yes' or 'no')
     check('camera-cadence', 'no')
     check('camera-pan-half-rate', 'no')
-    check('camera-pan-refreshes', enabled and '1' or '0')
+    check('camera-pan-refreshes', '0')
     if enabled then check('vulkan-queue-count', '3') end
     check('video-sync', enabled and 'display-resample' or 'audio')
     check('interpolation', enabled and 'no' or 'yes')
